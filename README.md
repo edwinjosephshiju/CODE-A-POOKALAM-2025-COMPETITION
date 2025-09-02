@@ -85,4 +85,4 @@ Code-a-Pookalam-2025/
 ---
 
 ## 🎊 Happy Onam! 🎊
-*Submitted for Code-a-Pookalam 2025 by TinkerHub RIT*
+*Submitted for Code-a-Pookalam 2025 by Edwin Joseph*
