@@ -65,8 +65,8 @@ python pookalam.py
 ```
 Code-a-Pookalam-2025/
 ├── README.md (this file)
-├── pookalam.py (or your main file)   <-- The Python script
-└── requirements.txt (if applicable)
+├── pookalam.py                       <-- The Python script
+└── requirements.txt 
 └── flowers/                          <-- Folder containing your images
     ├── marigold_orange.png
     ├── rose.png
