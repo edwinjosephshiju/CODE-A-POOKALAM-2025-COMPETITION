@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Pookalam Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .control-panel {
+            scrollbar-width: thin;
+            scrollbar-color: #4f46e5 #e5e7eb;
+        }
+        .control-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+        .control-panel::-webkit-scrollbar-track {
+            background: #e5e7eb;
+        }
+        .control-panel::-webkit-scrollbar-thumb {
+            background-color: #4f46e5;
+            border-radius: 10px;
+            border: 3px solid #e5e7eb;
+        }
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #4f46e5;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 220px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -110px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="flex flex-col lg:flex-row h-screen">
+        <!-- CONTROLS PANEL -->
+        <div id="controls" class="w-full lg:w-96 bg-white shadow-lg p-6 overflow-y-auto control-panel">
+            <div class="flex items-center mb-6">
+                <h1 class="text-3xl font-bold text-indigo-600">Pookalam Generator</h1>
+            </div>
+            
+            <!-- Flower Images Section -->
+            <div class="mb-6 bg-gray-50 p-4 rounded-lg">
+                <h2 class="text-lg font-semibold mb-3 border-b pb-2">1. Upload Flowers</h2>
+                <p class="text-sm text-gray-600 mb-3">Upload your own .png flower images. Transparent backgrounds work best!</p>
+                <input type="file" id="flower-upload" multiple accept="image/png" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"/>
+                <div id="flower-previews" class="mt-4 grid grid-cols-4 gap-2"></div>
+                 <p class="text-xs text-center text-gray-500 mt-2">No images? No problem! Default shapes will be used.</p>
+            </div>
+
+            <!-- Centerpiece Section -->
+            <div class="mb-6 bg-gray-50 p-4 rounded-lg">
+                <h2 class="text-lg font-semibold mb-3 border-b pb-2">2. Upload Centerpiece (Optional)</h2>
+                <input type="file" id="center-upload" accept="image/png" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"/>
+                <div id="center-preview" class="mt-4 flex justify-center"></div>
+            </div>
+
+            <!-- General Settings Section -->
+            <div class="mb-4">
+                <h2 class="text-lg font-semibold mb-3 border-b pb-2">3. Design & Settings</h2>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="canvas-size" class="text-sm font-medium">Resolution</label>
+                        <select id="canvas-size" class="w-full mt-1 p-2 border rounded-md text-sm">
+                            <option value="1024">1024px</option>
+                            <option value="2048">2048px</option>
+                            <option value="4096" selected>4096px (HD)</option>
+                            <option value="8000">8000px (4K)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="bg-color" class="text-sm font-medium">BG Color</label>
+                        <input type="color" id="bg-color" value="#0F190F" class="w-full mt-1 p-1 h-10 border rounded-md">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Density Parameters Section -->
+            <div class="mb-4">
+                <h3 class="font-semibold text-md mb-2">Arrangement</h3>
+                <div class="space-y-3">
+                     <!-- Rings -->
+                    <div>
+                        <div class="flex justify-between text-sm">
+                            <label for="rings" class="font-medium">Rings</label>
+                             <div class="tooltip">
+                                <span class="cursor-pointer">ℹ️</span>
+                                <span class="tooltiptext">Number of concentric circles of flowers.</span>
+                            </div>
+                        </div>
+                        <input type="range" id="rings" min="5" max="100" value="35" class="w-full">
+                    </div>
+                    <!-- Spacing -->
+                    <div>
+                        <div class="flex justify-between text-sm">
+                            <label for="spacing-factor" class="font-medium">Spacing</label>
+                             <div class="tooltip">
+                                <span class="cursor-pointer">ℹ️</span>
+                                <span class="tooltiptext">How tightly flowers are packed. Lower is denser.</span>
+                            </div>
+                        </div>
+                        <input type="range" id="spacing-factor" min="0.2" max="1.5" step="0.05" value="0.55" class="w-full">
+                    </div>
+                     <!-- Min Scale -->
+                    <div>
+                        <div class="flex justify-between text-sm">
+                            <label for="min-scale" class="font-medium">Center Size</label>
+                             <div class="tooltip">
+                                <span class="cursor-pointer">ℹ️</span>
+                                <span class="tooltiptext">Size of flowers in the innermost ring.</span>
+                            </div>
+                        </div>
+                        <input type="range" id="min-scale" min="0.001" max="0.05" step="0.001" value="0.007" class="w-full">
+                    </div>
+                    <!-- Max Scale -->
+                    <div>
+                        <div class="flex justify-between text-sm">
+                            <label for="max-scale" class="font-medium">Edge Size</label>
+                             <div class="tooltip">
+                                <span class="cursor-pointer">ℹ️</span>
+                                <span class="tooltiptext">Size of flowers in the outermost ring.</span>
+                            </div>
+                        </div>
+                        <input type="range" id="max-scale" min="0.01" max="0.1" step="0.001" value="0.032" class="w-full">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="mt-8 space-y-3">
+                <button id="generate-btn" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-indigo-700 transition-colors duration-300">
+                    Generate Pookalam
+                </button>
+                <button id="download-btn" class="w-full bg-gray-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-gray-700 transition-colors duration-300 hidden">
+                    Download Image
+                </button>
+            </div>
+        </div>
+
+        <!-- CANVAS AREA -->
+        <div class="flex-1 flex items-center justify-center p-4 bg-gray-200 relative">
+            <canvas id="pookalam-canvas" class="bg-white rounded-lg shadow-xl max-w-full max-h-full"></canvas>
+
+            <!-- Loading/Progress Overlay -->
+            <div id="progress-overlay" class="absolute inset-0 bg-black bg-opacity-50 flex-col items-center justify-center hidden">
+                 <div class="loader mb-4"></div>
+                <p id="progress-text" class="text-white text-lg font-semibold"></p>
+                <div class="w-1/2 mt-2 bg-gray-200 rounded-full h-2.5">
+                    <div id="progress-bar" class="bg-indigo-600 h-2.5 rounded-full" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const canvas = document.getElementById('pookalam-canvas');
+        const ctx = canvas.getContext('2d');
+        const generateBtn = document.getElementById('generate-btn');
+        const downloadBtn = document.getElementById('download-btn');
+        const progressOverlay = document.getElementById('progress-overlay');
+        const progressText = document.getElementById('progress-text');
+        const progressBar = document.getElementById('progress-bar');
+        
+        const flowerUpload = document.getElementById('flower-upload');
+        const centerUpload = document.getElementById('center-upload');
+        const flowerPreviews = document.getElementById('flower-previews');
+        const centerPreview = document.getElementById('center-preview');
+
+        // Config variables
+        let config = {};
+        
+        let loadedFlowers = {};
+        let centerImage = null;
+
+        // Caches for performance
+        const thumbCache = {};
+        const rotCache = {};
+        
+        // --- DEFAULT FLOWERS ---
+        function createDefaultFlower(color) {
+            const size = 64;
+            const c = document.createElement('canvas');
+            c.width = size;
+            c.height = size;
+            const c_ctx = c.getContext('2d');
+            
+            c_ctx.fillStyle = color;
+            c_ctx.beginPath();
+            c_ctx.arc(size/2, size/2, size/2.2, 0, 2 * Math.PI);
+            c_ctx.fill();
+            
+            c_ctx.fillStyle = 'rgba(0,0,0,0.1)';
+            c_ctx.beginPath();
+            c_ctx.arc(size/2, size/2, size/4, 0, 2 * Math.PI);
+            c_ctx.fill();
+
+            const img = new Image();
+            img.src = c.toDataURL();
+            return img;
+        }
+
+        function loadDefaultFlowers() {
+            loadedFlowers = {
+                "marigold_orange": createDefaultFlower("#FFC300"),
+                "marigold_yellow": createDefaultFlower("#FFEB3B"),
+                "rose": createDefaultFlower("#E91E63"),
+                "lotus": createDefaultFlower("#F48FB1"),
+                "daisy": createDefaultFlower("#FFFFFF"),
+            };
+            updateFlowerPreviews();
+        }
+
+
+        // --- EVENT LISTENERS ---
+        window.onload = () => {
+             canvas.width = 512;
+             canvas.height = 512;
+             ctx.fillStyle = document.getElementById('bg-color').value;
+             ctx.fillRect(0, 0, canvas.width, canvas.height);
+             loadDefaultFlowers();
+        };
+
+        flowerUpload.addEventListener('change', (e) => {
+            loadedFlowers = {}; // Clear previous/default flowers
+            flowerPreviews.innerHTML = '';
+            const files = Array.from(e.target.files);
+            let loadedCount = 0;
+            if(files.length === 0) {
+                loadDefaultFlowers();
+                return;
+            }
+            files.forEach((file, index) => {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const name = file.name.split('.')[0] + '_' + index;
+                        loadedFlowers[name] = img;
+                        loadedCount++;
+                        if (loadedCount === files.length) {
+                             updateFlowerPreviews();
+                        }
+                    };
+                };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        centerUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) {
+                 centerImage = null;
+                 centerPreview.innerHTML = '';
+                 return;
+            }
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    centerImage = img;
+                    updateCenterPreview();
+                };
+            };
+            reader.readAsDataURL(file);
+        });
+        
+        generateBtn.addEventListener('click', () => {
+             if (Object.keys(loadedFlowers).length === 0) {
+                alert("Please upload some flower images first, or wait for the default flowers to load.");
+                return;
+            }
+            updateConfig();
+            composePookalam();
+        });
+
+        downloadBtn.addEventListener('click', () => {
+            const link = document.createElement('a');
+            link.download = 'pookalam.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        });
+
+
+        // --- UI UPDATE FUNCTIONS ---
+        function updateFlowerPreviews() {
+            flowerPreviews.innerHTML = '';
+            Object.values(loadedFlowers).forEach(img => {
+                const previewImg = new Image();
+                previewImg.src = img.src;
+                previewImg.className = 'w-16 h-16 object-cover rounded-md shadow-md';
+                flowerPreviews.appendChild(previewImg);
+            });
+        }
+        
+        function updateCenterPreview() {
+            centerPreview.innerHTML = '';
+            if (centerImage) {
+                 const previewImg = new Image();
+                previewImg.src = centerImage.src;
+                previewImg.className = 'w-24 h-24 object-cover rounded-full shadow-md';
+                centerPreview.appendChild(previewImg);
+            }
+        }
+
+        function updateProgress(percentage, text) {
+            progressBar.style.width = `${percentage}%`;
+            progressText.innerText = text;
+        }
+
+        // --- CONFIGURATION ---
+        function updateConfig() {
+            config = {
+                canvas_size: parseInt(document.getElementById('canvas-size').value),
+                bg_color: document.getElementById('bg-color').value,
+                rings: parseInt(document.getElementById('rings').value),
+                layers_per_ring: 2,
+                spacing_factor: parseFloat(document.getElementById('spacing-factor').value),
+                min_scale: parseFloat(document.getElementById('min-scale').value),
+                max_scale: parseFloat(document.getElementById('max-scale').value),
+                angle_jitter_deg: 0.5,
+                radius_jitter_px: 0.5,
+                size_jitter_factor: 0.02,
+                max_flowers: 600000
+            };
+        }
+
+
+        // --- PATTERN ENGINE ---
+        const PATTERNS = {
+            plain: (args) => 0,
+            zigzag: ({ flower_idx, max_offset }) => Math.sin(flower_idx * 0.5) * max_offset,
+            wave: ({ flower_idx, estimated_count, max_offset }) => {
+                const num_waves = 30;
+                const angle = flower_idx * (2 * Math.PI / estimated_count) * num_waves;
+                return Math.sin(angle) * max_offset;
+            },
+        };
+
+        // --- CACHING AND IMAGE MANIPULATION ---
+        function getThumb(img, name, size_px) {
+            const key = `${name}_${size_px}`;
+            if (thumbCache[key]) return thumbCache[key];
+
+            const thumbCanvas = document.createElement('canvas');
+            thumbCanvas.width = size_px;
+            thumbCanvas.height = size_px;
+            const thumbCtx = thumbCanvas.getContext('2d');
+            thumbCtx.drawImage(img, 0, 0, size_px, size_px);
+            
+            thumbCache[key] = thumbCanvas;
+            return thumbCanvas;
+        }
+
+        function getRotated(img, name, size_px, angle) {
+            const rot_key = `${name}_${size_px}_${Math.round(angle / 5) * 5}`;
+            if (rotCache[rot_key]) return rotCache[rot_key];
+
+            const thumb = getThumb(img, name, size_px);
+            
+            const rotCanvas = document.createElement('canvas');
+            const diagonal = Math.sqrt(2) * size_px;
+            rotCanvas.width = diagonal;
+            rotCanvas.height = diagonal;
+            const rotCtx = rotCanvas.getContext('2d');
+            
+            rotCtx.translate(diagonal / 2, diagonal / 2);
+            rotCtx.rotate(angle * Math.PI / 180);
+            rotCtx.drawImage(thumb, -size_px / 2, -size_px / 2, size_px, size_px);
+
+            rotCache[rot_key] = rotCanvas;
+            return rotCanvas;
+        }
+
+
+        // --- CORE LOGIC ---
+        function generateRandomFlowerSequence(flower_names, num_rings) {
+            let sequence = [], available_flowers = [...flower_names], current_ring = 0;
+            while (current_ring < num_rings) {
+                const duration = Math.floor(Math.random() * 3) + 1;
+                const num_types = Math.random() < 0.7 ? 1 : 2; // Bias towards single flower rings
+                const flowers_for_segment = available_flowers.sort(() => 0.5 - Math.random()).slice(0, num_types);
+                for (let i = 0; i < duration; i++) {
+                    if (current_ring < num_rings) {
+                        sequence.push(flowers_for_segment);
+                        current_ring++;
+                    } else break;
+                }
+            }
+            return sequence;
+        }
+
+        async function composePookalam() {
+            // --- Setup ---
+            progressOverlay.style.display = 'flex';
+            generateBtn.disabled = true;
+            downloadBtn.style.display = 'none';
+            Object.keys(thumbCache).forEach(key => delete thumbCache[key]);
+            Object.keys(rotCache).forEach(key => delete rotCache[key]);
+
+            canvas.width = config.canvas_size;
+            canvas.height = config.canvas_size;
+            ctx.fillStyle = config.bg_color;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const flowerNames = Object.keys(loadedFlowers);
+            const ring_flower_sequence = generateRandomFlowerSequence(flowerNames, config.rings);
+            
+            const cx = canvas.width / 2;
+            const cy = canvas.height / 2;
+            const outer_radius = canvas.width * 0.95 / 2;
+            const inner_radius = canvas.width * 0.05;
+            let total_flowers = 0;
+
+            // --- Main Loop (Ring by Ring) ---
+            for (let ring_idx = 0; ring_idx < config.rings; ring_idx++) {
+                if (total_flowers >= config.max_flowers) break;
+                
+                updateProgress((ring_idx / config.rings) * 100, `Generating Ring ${ring_idx + 1} of ${config.rings}`);
+                await new Promise(resolve => setTimeout(resolve, 0)); // Allow UI to update
+
+                const fs = ring_flower_sequence[ring_idx];
+                const t = ring_idx / Math.max(1, config.rings - 1);
+                const base_radius_px = outer_radius * (1 - t) + inner_radius * t;
+                const scale_frac = config.min_scale + (config.max_scale - config.min_scale) * (1 - t);
+                let size_px = Math.max(6, Math.floor(canvas.width * scale_frac));
+
+                if (ring_idx >= config.rings - 3) {
+                     size_px = Math.floor(size_px * 1.15);
+                }
+
+                const pattern_name = Math.random() > 0.6 ? "wave" : "plain";
+
+                // --- Multi-Layer Rendering Loop ---
+                for (let layer = 0; layer < config.layers_per_ring; layer++) {
+                    if (total_flowers >= config.max_flowers) break;
+
+                    const layer_offset = (layer - (config.layers_per_ring - 1) / 2.0) * size_px * 0.6;
+                    const radius_px = base_radius_px + layer_offset;
+                    const circumference = 2 * Math.PI * radius_px;
+                    const estimated_count = Math.max(4, Math.floor(circumference / (size_px * config.spacing_factor)));
+                    const phase_shift = (layer % 2 !== 0) ? (Math.PI / estimated_count) : 0;
+
+                    for (let k = 0; k < estimated_count; k++) {
+                        if (total_flowers >= config.max_flowers) break;
+
+                        const base_angle = (2 * Math.PI * k / estimated_count) + phase_shift;
+                        const angle = base_angle + (Math.random() - 0.5) * 2 * config.angle_jitter_deg * (Math.PI / 180);
+                        
+                        const max_offset = size_px * 0.5;
+                        const pattern_args = { flower_idx: k, estimated_count, max_offset };
+                        const offset = PATTERNS[pattern_name](pattern_args);
+                        
+                        const r_j = radius_px + (Math.random() - 0.5) * 2 * config.radius_jitter_px + offset;
+                        const x = cx + r_j * Math.cos(angle);
+                        const y = cy + r_j * Math.sin(angle);
+                        
+                        const fname = fs[k % fs.length];
+                        const orig_img = loadedFlowers[fname];
+                        const rot_deg = Math.random() * 360;
+                        
+                        const size_delta = size_px * config.size_jitter_factor;
+                        const size_jitter = Math.max(4, Math.floor(size_px + (Math.random() - 0.5) * 2 * size_delta));
+                        
+                        const thumb_rot = getRotated(orig_img, fname, size_jitter, rot_deg);
+                        const w = thumb_rot.width;
+                        const h = thumb_rot.height;
+                        const paste_x = Math.floor(x - w / 2);
+                        const paste_y = Math.floor(y - h / 2);
+
+                        ctx.drawImage(thumb_rot, paste_x, paste_y);
+                        total_flowers++;
+                    }
+                }
+            }
+
+            // --- Fill Center Gap ---
+            updateProgress(95, "Filling center...");
+            await new Promise(resolve => setTimeout(resolve, 0));
+
+            const center_fill_radius = inner_radius * 0.98;
+            const center_flower_size = Math.max(6, Math.floor(canvas.width * config.min_scale * 1.15));
+            const center_area = Math.PI * (center_fill_radius ** 2);
+            const flower_area = (center_flower_size * 0.8) ** 2;
+            const num_center_flowers = Math.floor((center_area / flower_area) * 1.6);
+            
+            for (let i = 0; i < num_center_flowers; i++) {
+                 if (total_flowers >= config.max_flowers) break;
+                 
+                const rand_angle = Math.random() * 2 * Math.PI;
+                const rand_radius = center_fill_radius * Math.sqrt(Math.random());
+                const x = cx + rand_radius * Math.cos(rand_angle);
+                const y = cy + rand_radius * Math.sin(rand_angle);
+
+                const fname = flowerNames[Math.floor(Math.random() * flowerNames.length)];
+                const orig_img = loadedFlowers[fname];
+                const rot_deg = Math.random() * 360;
+                
+                const size_delta = center_flower_size * config.size_jitter_factor;
+                const size_jitter = Math.max(4, Math.floor(center_flower_size + (Math.random() - 0.5) * 2 * size_delta));
+                
+                const thumb_rot = getRotated(orig_img, fname, size_jitter, rot_deg);
+                const w = thumb_rot.width;
+                const h = thumb_rot.height;
+                ctx.drawImage(thumb_rot, x - w / 2, y - h / 2);
+                total_flowers++;
+            }
+            
+             // --- Centerpiece Placement ---
+            if (centerImage) {
+                updateProgress(98, "Placing centerpiece...");
+                await new Promise(resolve => setTimeout(resolve, 0));
+                const center_size = inner_radius * 2 * 0.95;
+                const aspect_ratio = centerImage.width / centerImage.height;
+                let w, h;
+                if (aspect_ratio > 1) { // wider than tall
+                    w = center_size;
+                    h = center_size / aspect_ratio;
+                } else { // taller than wide or square
+                    h = center_size;
+                    w = center_size * aspect_ratio;
+                }
+                ctx.drawImage(centerImage, cx - w/2, cy - h/2, w, h);
+            }
+
+            // --- Finalize ---
+            updateProgress(100, "Done! Total Flowers: " + total_flowers);
+            setTimeout(() => {
+                progressOverlay.style.display = 'none';
+                generateBtn.disabled = false;
+                downloadBtn.style.display = 'block';
+            }, 1000);
+        }
+    </script>
+
+</body>
+</html>
