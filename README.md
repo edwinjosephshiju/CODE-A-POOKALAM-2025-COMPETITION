@@ -29,14 +29,18 @@ The design's key feature is its transition in texture. The outer rings are order
 
 ### Preview
 
-**WITHOUT FLOWER FILES**
+### WITHOUT FLOWER FILES 🌸❌
+
+
 ![My Pookalam Example 1](Screenshots/nf_pookalam_eg1.png)
 ![My Pookalam Example 2](Screenshots/nf_pookalam_eg2.png)
 
 ---
 ---
 
-**WITH FLOWER FILES**
+### WITH FLOWER FILES 🌸✅
+
+
 ![My Pookalam Example 1](Screenshots/wf_pookalam_eg1.png)
 ![My Pookalam Example 2](Screenshots/wf_pookalam_eg2.png)
 
@@ -88,8 +92,12 @@ Code-a-Pookalam-2025/
     └── Lotus.png
     └── marigold_yellow.png
 └── Screenshots/                      <-- Folder containing your output/example images
-    ├── output_pookalam_eg1.jpg
-    └── output_pookalam_eg2.jpg 
+    ├── nf_pookalam_eg1.png
+    └── nf_pookalam_eg2.png
+    └── wf_pookalam_eg1.png
+    └── wf_pookalam_eg2.png
+    └── Screenshot_pookalam_html.jpeg
+
 ```
 
 ---
