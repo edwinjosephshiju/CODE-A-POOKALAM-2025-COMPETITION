@@ -30,12 +30,15 @@ The design's key feature is its transition in texture. The outer rings are order
 ### Preview
 
 **WITHOUT FLOWER FILES**
-![My Pookalam Example 1](output/output_pookalam_eg1.jpg)
-![My Pookalam Example 2](output/output_pookalam_eg2.jpg)
+![My Pookalam Example 1](Screenshots/nf_pookalam_eg1.png)
+![My Pookalam Example 2](Screenshots/nf_pookalam_eg2.png)
 
 **WITH FLOWER FILES**
-![My Pookalam Example 1](output/output_pookalam_eg1.jpg)
-![My Pookalam Example 2](output/output_pookalam_eg2.jpg)
+![My Pookalam Example 1](Screenshots/wf_pookalam_eg1.png)
+![My Pookalam Example 2](Screenshots/wf_pookalam_eg2.png)
+
+**WEB PAGE LOOK**
+![My Pookalam Web Page](Screenshots/Screenshot_pookalam_html.jpeg)
 
 ---
 
