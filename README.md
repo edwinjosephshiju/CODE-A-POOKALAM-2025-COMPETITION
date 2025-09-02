@@ -33,9 +33,17 @@ The design's key feature is its transition in texture. The outer rings are order
 ![My Pookalam Example 1](Screenshots/nf_pookalam_eg1.png)
 ![My Pookalam Example 2](Screenshots/nf_pookalam_eg2.png)
 
+---
+---
+
 **WITH FLOWER FILES**
 ![My Pookalam Example 1](Screenshots/wf_pookalam_eg1.png)
 ![My Pookalam Example 2](Screenshots/wf_pookalam_eg2.png)
+
+*Note: if you are going to use custom flower files upload your own .png flower images. Transparent backgrounds work the best!*
+
+---
+---
 
 **WEB PAGE LOOK**
 ![My Pookalam Web Page](Screenshots/Screenshot_pookalam_html.jpeg)
@@ -53,18 +61,22 @@ The design's key feature is its transition in texture. The outer rings are order
 ## 🚀 How to Run
 
 ### Prerequisites
-**Just a Web Browser preferably Chrome or Firefox (latest version).**
+
+**Just a Web Browser preferably [Chrome](https://www.google.com/intl/en_in/chrome/) or [Firefox](https://www.firefox.com/en-US/?utm_campaign=SET_DEFAULT_BROWSER) (latest version).**
+
 ---
 
 ### Running the Code
 
-**Open the HTML (pookalam.html) in a Web Browser (preferably Chrome or Firefox).**
+**Open the HTML File ([pookalam.html](pookalam.html)) in a Web Browser (preferably a [Chrome](https://www.google.com/intl/en_in/chrome/) or [Firefox](https://www.firefox.com/en-US/?utm_campaign=SET_DEFAULT_BROWSER)).**
+
+---
 
 ## 📁 File Structure
 ```
 Code-a-Pookalam-2025/
 ├── README.md (this file)
-├── pookalam.html                       <-- The HTML file
+├── pookalam.html                     <-- The HTML file
 └── flowers/                          <-- Folder containing your images (optional)
     ├── marigold_orange.png
     ├── rose.png
@@ -75,7 +87,7 @@ Code-a-Pookalam-2025/
     └── chrysanthemum.png
     └── Lotus.png
     └── marigold_yellow.png
-└── Screenshots/                          <-- Folder containing your output/example images
+└── Screenshots/                      <-- Folder containing your output/example images
     ├── output_pookalam_eg1.jpg
     └── output_pookalam_eg2.jpg 
 ```
