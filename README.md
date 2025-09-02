@@ -74,6 +74,12 @@ The design's key feature is its transition in texture. The outer rings are order
 
 **Open the HTML File ([pookalam.html](pookalam.html)) in a Web Browser (preferably a [Chrome](https://www.google.com/intl/en_in/chrome/) or [Firefox](https://www.firefox.com/en-US/?utm_campaign=SET_DEFAULT_BROWSER)).**
 
+```bash
+
+open pookalam.html
+
+```
+
 ---
 
 ## 📁 File Structure
