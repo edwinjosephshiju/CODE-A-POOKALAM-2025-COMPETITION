@@ -3,10 +3,10 @@
 ---
 
 ## 👨‍💻 About Me
-- **Name:** Edwin Joseph
-- **Institution:** MBCCET Peermade
+- **Name:** [Edwin Joseph](https://www.instagram.com/_edw.inx?igsh=dWNsZGY0MGwyN3o=)
+- **Institution:** [MBCCET Peermade](https://maps.app.goo.gl/16h5RnQLXWuDoLqc6)
 - **GitHub:** [@edwinjosephshiju](https://github.com/edwinjosephshiju)
-- **Programming Language Used:** Python
+- **Programming Language Used:** [Python](https://www.python.org/)
 
 ---
 
@@ -46,6 +46,13 @@ The design's key feature is its transition in texture. The outer rings are order
 ### Prerequisites
 ```bash
 pip install Pillow
+```
+**OR**
+
+After downloading the requirements.txt in the same directory open a command prompt and enter the following:
+
+```bash
+pip install -r requirements.txt
 ```
 ---
 
