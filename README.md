@@ -6,7 +6,7 @@
 - **Name:** [Edwin Joseph](https://www.instagram.com/_edw.inx?igsh=dWNsZGY0MGwyN3o=)
 - **Institution:** [MBCCET Peermade](https://maps.app.goo.gl/16h5RnQLXWuDoLqc6)
 - **GitHub:** [@edwinjosephshiju](https://github.com/edwinjosephshiju)
-- **Programming Language Used:** [Python](https://www.python.org/)
+- **Programming Language Used:** [HTML](https://en.wikipedia.org/wiki/HTML) and [JavaScript](https://en.wikipedia.org/wiki/JavaScript)
 
 ---
 
@@ -28,6 +28,12 @@ The design's key feature is its transition in texture. The outer rings are order
 ---
 
 ### Preview
+
+**WITHOUT FLOWER FILES**
+![My Pookalam Example 1](output/output_pookalam_eg1.jpg)
+![My Pookalam Example 2](output/output_pookalam_eg2.jpg)
+
+**WITH FLOWER FILES**
 ![My Pookalam Example 1](output/output_pookalam_eg1.jpg)
 ![My Pookalam Example 2](output/output_pookalam_eg2.jpg)
 
@@ -44,30 +50,19 @@ The design's key feature is its transition in texture. The outer rings are order
 ## 🚀 How to Run
 
 ### Prerequisites
-```bash
-pip install Pillow
-```
-**OR**
-
-After downloading the requirements.txt in the same directory open a command prompt and enter the following:
-
-```bash
-pip install -r requirements.txt
-```
+**Just a Web Browser preferably Chrome or Firefox (latest version).**
 ---
 
 ### Running the Code
-```bash
-python pookalam.py
-```
+
+**Open the HTML (pookalam.html) in a Web Browser (preferably Chrome or Firefox).**
 
 ## 📁 File Structure
 ```
 Code-a-Pookalam-2025/
 ├── README.md (this file)
-├── pookalam.py                       <-- The Python script
-└── requirements.txt 
-└── flowers/                          <-- Folder containing your images
+├── pookalam.html                       <-- The HTML file
+└── flowers/                          <-- Folder containing your images (optional)
     ├── marigold_orange.png
     ├── rose.png
     ├── jasmine.png
@@ -77,7 +72,7 @@ Code-a-Pookalam-2025/
     └── chrysanthemum.png
     └── Lotus.png
     └── marigold_yellow.png
-└── output/                          <-- Folder containing your output images and example images
+└── Screenshots/                          <-- Folder containing your output/example images
     ├── output_pookalam_eg1.jpg
     └── output_pookalam_eg2.jpg 
 ```
@@ -85,4 +80,4 @@ Code-a-Pookalam-2025/
 ---
 
 ## 🎊 Happy Onam! 🎊
-*Submitted for Code-a-Pookalam 2025 by Edwin Joseph*
+*Submitted for Code-a-Pookalam 2025 by Edwin Joseph.*
