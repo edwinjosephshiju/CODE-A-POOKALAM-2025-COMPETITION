@@ -80,7 +80,7 @@
                 <p class="text-sm text-gray-600 mb-3">Upload your own .png flower images. Transparent backgrounds work best!</p>
                 <input type="file" id="flower-upload" multiple accept="image/png" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"/>
                 <div id="flower-previews" class="mt-4 grid grid-cols-4 gap-2"></div>
-                 <p class="text-xs text-center text-gray-500 mt-2">No images? No problem! Default shapes will be used.</p>
+                <p class="text-xs text-center text-gray-500 mt-2">Default flowers loaded from **./flower** folder.</p>
             </div>
 
             <!-- Centerpiece Section -->
@@ -114,13 +114,13 @@
             <div class="mb-4">
                 <h3 class="font-semibold text-md mb-2">Arrangement</h3>
                 <div class="space-y-3">
-                     <!-- Rings -->
+                    <!-- Rings -->
                     <div>
                         <div class="flex justify-between text-sm">
                             <label for="rings" class="font-medium">Rings</label>
                              <div class="tooltip">
-                                <span class="cursor-pointer">ℹ️</span>
-                                <span class="tooltiptext">Number of concentric circles of flowers.</span>
+                                 <span class="cursor-pointer">ℹ️</span>
+                                 <span class="tooltiptext">Number of concentric circles of flowers.</span>
                             </div>
                         </div>
                         <input type="range" id="rings" min="5" max="100" value="35" class="w-full">
@@ -130,8 +130,8 @@
                         <div class="flex justify-between text-sm">
                             <label for="spacing-factor" class="font-medium">Spacing</label>
                              <div class="tooltip">
-                                <span class="cursor-pointer">ℹ️</span>
-                                <span class="tooltiptext">How tightly flowers are packed. Lower is denser.</span>
+                                 <span class="cursor-pointer">ℹ️</span>
+                                 <span class="tooltiptext">How tightly flowers are packed. Lower is denser.</span>
                             </div>
                         </div>
                         <input type="range" id="spacing-factor" min="0.2" max="1.5" step="0.05" value="0.55" class="w-full">
@@ -141,8 +141,8 @@
                         <div class="flex justify-between text-sm">
                             <label for="min-scale" class="font-medium">Center Size</label>
                              <div class="tooltip">
-                                <span class="cursor-pointer">ℹ️</span>
-                                <span class="tooltiptext">Size of flowers in the innermost ring.</span>
+                                 <span class="cursor-pointer">ℹ️</span>
+                                 <span class="tooltiptext">Size of flowers in the innermost ring.</span>
                             </div>
                         </div>
                         <input type="range" id="min-scale" min="0.001" max="0.05" step="0.001" value="0.007" class="w-full">
@@ -152,8 +152,8 @@
                         <div class="flex justify-between text-sm">
                             <label for="max-scale" class="font-medium">Edge Size</label>
                              <div class="tooltip">
-                                <span class="cursor-pointer">ℹ️</span>
-                                <span class="tooltiptext">Size of flowers in the outermost ring.</span>
+                                 <span class="cursor-pointer">ℹ️</span>
+                                 <span class="tooltiptext">Size of flowers in the outermost ring.</span>
                             </div>
                         </div>
                         <input type="range" id="max-scale" min="0.01" max="0.1" step="0.001" value="0.032" class="w-full">
@@ -212,8 +212,8 @@
         const thumbCache = {};
         const rotCache = {};
         
-        // --- DEFAULT FLOWERS ---
-        function createDefaultFlower(color) {
+        // --- FALLBACK FLOWERS (if image files are missing) ---
+        function createFallbackFlowerShape(color) {
             const size = 64;
             const c = document.createElement('canvas');
             c.width = size;
@@ -235,36 +235,75 @@
             return img;
         }
 
-        function loadDefaultFlowers() {
-            loadedFlowers = {
-                "marigold_orange": createDefaultFlower("#FFC300"),
-                "marigold_yellow": createDefaultFlower("#FFEB3B"),
-                "rose": createDefaultFlower("#E91E63"),
-                "lotus": createDefaultFlower("#F48FB1"),
-                "daisy": createDefaultFlower("#FFFFFF"),
-            };
+        async function initializeFlowers() {
+            // 1. List of local flower files to load
+            const localFlowerNames = [
+                "Lotus", "chrysanthemum", "daisy", "hibiscus", "ixora",
+                "jasmine", "marigold_orange", "marigold_yellow", "rose"
+            ];
+            loadedFlowers = {};
+            let promises = [];
+
+            // Attempt to load each local image
+            localFlowerNames.forEach(name => {
+                const img = new Image();
+                img.crossOrigin = "Anonymous";
+                const promise = new Promise((resolve) => {
+                    img.onload = () => resolve({ name, img });
+                    img.onerror = () => {
+                        console.error(`Failed to load flower from ./flower/${name}.PNG`);
+                        resolve(null);
+                    };
+                });
+                img.src = `./flower/${name}.PNG`; // Path is relative to the HTML file
+                promises.push(promise);
+            });
+
+            const results = await Promise.all(promises);
+            results.filter(r => r).forEach(result => {
+                loadedFlowers[result.name] = result.img;
+            });
+
+            // 2. Fallback if no images were successfully loaded
+            if (Object.keys(loadedFlowers).length === 0) {
+                console.warn("No flower images loaded, using geometric shapes as fallback.");
+                loadedFlowers = {
+                    "marigold_orange_fallback": createFallbackFlowerShape("#FFC300"),
+                    "rose_fallback": createFallbackFlowerShape("#E91E63"),
+                    "daisy_fallback": createFallbackFlowerShape("#FFFFFF"),
+                };
+            }
             updateFlowerPreviews();
         }
 
 
         // --- EVENT LISTENERS ---
-        window.onload = () => {
-             canvas.width = 512;
-             canvas.height = 512;
-             ctx.fillStyle = document.getElementById('bg-color').value;
-             ctx.fillRect(0, 0, canvas.width, canvas.height);
-             loadDefaultFlowers();
+        window.onload = async () => {
+            canvas.width = 512;
+            canvas.height = 512;
+            ctx.fillStyle = document.getElementById('bg-color').value;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Load local flowers (or fallbacks)
+            await initializeFlowers();
+            
+            // Initial generation
+            updateConfig();
+            composePookalam();
         };
 
         flowerUpload.addEventListener('change', (e) => {
-            loadedFlowers = {}; // Clear previous/default flowers
+            loadedFlowers = {}; // Clear previous (local/uploaded) flowers
             flowerPreviews.innerHTML = '';
             const files = Array.from(e.target.files);
-            let loadedCount = 0;
+            
             if(files.length === 0) {
-                loadDefaultFlowers();
-                return;
+                 // If user clears selection, re-initialize with local/fallback flowers
+                 initializeFlowers();
+                 return;
             }
+            
+            let loadedCount = 0;
             files.forEach((file, index) => {
                 const reader = new FileReader();
                 reader.onload = (event) => {
@@ -304,9 +343,11 @@
         
         generateBtn.addEventListener('click', () => {
              if (Object.keys(loadedFlowers).length === 0) {
-                alert("Please upload some flower images first, or wait for the default flowers to load.");
-                return;
-            }
+                 // In case initialization somehow failed
+                 console.error("No flowers loaded. Falling back to simple shapes.");
+                 initializeFlowers();
+                 return;
+             }
             updateConfig();
             composePookalam();
         });
@@ -383,24 +424,38 @@
             thumbCanvas.width = size_px;
             thumbCanvas.height = size_px;
             const thumbCtx = thumbCanvas.getContext('2d');
-            thumbCtx.drawImage(img, 0, 0, size_px, size_px);
+            // Draw image while maintaining aspect ratio (if images are not square, this helps)
+            let drawX = 0, drawY = 0, drawW = size_px, drawH = size_px;
+            const ratio = img.width / img.height;
+            if (ratio > 1) { // Wider
+                drawH = size_px / ratio;
+                drawY = (size_px - drawH) / 2;
+            } else if (ratio < 1) { // Taller
+                drawW = size_px * ratio;
+                drawX = (size_px - drawW) / 2;
+            }
+
+            thumbCtx.drawImage(img, drawX, drawY, drawW, drawH);
             
             thumbCache[key] = thumbCanvas;
             return thumbCanvas;
         }
 
         function getRotated(img, name, size_px, angle) {
+            // Cache keys are based on the flower name, size, and rotation snapped to the nearest 5 degrees
             const rot_key = `${name}_${size_px}_${Math.round(angle / 5) * 5}`;
             if (rotCache[rot_key]) return rotCache[rot_key];
 
             const thumb = getThumb(img, name, size_px);
             
             const rotCanvas = document.createElement('canvas');
+            // Calculate size for the rotated image canvas to prevent clipping
             const diagonal = Math.sqrt(2) * size_px;
             rotCanvas.width = diagonal;
             rotCanvas.height = diagonal;
             const rotCtx = rotCanvas.getContext('2d');
             
+            // Translate to center, rotate, and draw
             rotCtx.translate(diagonal / 2, diagonal / 2);
             rotCtx.rotate(angle * Math.PI / 180);
             rotCtx.drawImage(thumb, -size_px / 2, -size_px / 2, size_px, size_px);
@@ -413,10 +468,18 @@
         // --- CORE LOGIC ---
         function generateRandomFlowerSequence(flower_names, num_rings) {
             let sequence = [], available_flowers = [...flower_names], current_ring = 0;
+            // Ensure there are flowers to select from
+            if (available_flowers.length === 0) return [];
+            
             while (current_ring < num_rings) {
-                const duration = Math.floor(Math.random() * 3) + 1;
-                const num_types = Math.random() < 0.7 ? 1 : 2; // Bias towards single flower rings
+                // Determine how many rings this flower type will last (1 to 3)
+                const duration = Math.floor(Math.random() * 3) + 1; 
+                // Determine if this ring should use 1 or 2 flower types (biased towards 1)
+                const num_types = Math.random() < 0.7 ? 1 : 2; 
+                
+                // Shuffle available flowers and pick the required number of types
                 const flowers_for_segment = available_flowers.sort(() => 0.5 - Math.random()).slice(0, num_types);
+                
                 for (let i = 0; i < duration; i++) {
                     if (current_ring < num_rings) {
                         sequence.push(flowers_for_segment);
@@ -424,7 +487,8 @@
                     } else break;
                 }
             }
-            return sequence;
+            // Trim the sequence to exactly the number of rings requested
+            return sequence.slice(0, num_rings);
         }
 
         async function composePookalam() {
@@ -432,6 +496,7 @@
             progressOverlay.style.display = 'flex';
             generateBtn.disabled = true;
             downloadBtn.style.display = 'none';
+            // Clear caches to handle size and rotation changes
             Object.keys(thumbCache).forEach(key => delete thumbCache[key]);
             Object.keys(rotCache).forEach(key => delete rotCache[key]);
 
@@ -441,6 +506,13 @@
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             const flowerNames = Object.keys(loadedFlowers);
+            if (flowerNames.length === 0) {
+                console.error("Flower list is empty, stopping generation.");
+                progressOverlay.style.display = 'none';
+                generateBtn.disabled = false;
+                return;
+            }
+            
             const ring_flower_sequence = generateRandomFlowerSequence(flowerNames, config.rings);
             
             const cx = canvas.width / 2;
@@ -458,14 +530,18 @@
 
                 const fs = ring_flower_sequence[ring_idx];
                 const t = ring_idx / Math.max(1, config.rings - 1);
+                // Linearly interpolate radius from outer to inner bounds
                 const base_radius_px = outer_radius * (1 - t) + inner_radius * t;
+                // Linearly interpolate scale from max_scale (outer) to min_scale (inner)
                 const scale_frac = config.min_scale + (config.max_scale - config.min_scale) * (1 - t);
                 let size_px = Math.max(6, Math.floor(canvas.width * scale_frac));
 
+                // Make the inner rings slightly larger for visual emphasis
                 if (ring_idx >= config.rings - 3) {
                      size_px = Math.floor(size_px * 1.15);
                 }
 
+                // Randomly choose a pattern for this ring
                 const pattern_name = Math.random() > 0.6 ? "wave" : "plain";
 
                 // --- Multi-Layer Rendering Loop ---
@@ -475,30 +551,37 @@
                     const layer_offset = (layer - (config.layers_per_ring - 1) / 2.0) * size_px * 0.6;
                     const radius_px = base_radius_px + layer_offset;
                     const circumference = 2 * Math.PI * radius_px;
+                    // Calculate number of flowers needed based on size and spacing factor
                     const estimated_count = Math.max(4, Math.floor(circumference / (size_px * config.spacing_factor)));
+                    // Stagger layers for a brick-like effect
                     const phase_shift = (layer % 2 !== 0) ? (Math.PI / estimated_count) : 0;
 
                     for (let k = 0; k < estimated_count; k++) {
                         if (total_flowers >= config.max_flowers) break;
 
                         const base_angle = (2 * Math.PI * k / estimated_count) + phase_shift;
+                        // Apply angular jitter
                         const angle = base_angle + (Math.random() - 0.5) * 2 * config.angle_jitter_deg * (Math.PI / 180);
                         
                         const max_offset = size_px * 0.5;
                         const pattern_args = { flower_idx: k, estimated_count, max_offset };
                         const offset = PATTERNS[pattern_name](pattern_args);
                         
+                        // Apply radius jitter and pattern offset
                         const r_j = radius_px + (Math.random() - 0.5) * 2 * config.radius_jitter_px + offset;
                         const x = cx + r_j * Math.cos(angle);
                         const y = cy + r_j * Math.sin(angle);
                         
+                        // Select flower type from the ring's segment pool
                         const fname = fs[k % fs.length];
                         const orig_img = loadedFlowers[fname];
                         const rot_deg = Math.random() * 360;
                         
+                        // Apply size jitter
                         const size_delta = size_px * config.size_jitter_factor;
                         const size_jitter = Math.max(4, Math.floor(size_px + (Math.random() - 0.5) * 2 * size_delta));
                         
+                        // Get the pre-rotated image from cache/generate if needed
                         const thumb_rot = getRotated(orig_img, fname, size_jitter, rot_deg);
                         const w = thumb_rot.width;
                         const h = thumb_rot.height;
@@ -517,18 +600,21 @@
 
             const center_fill_radius = inner_radius * 0.98;
             const center_flower_size = Math.max(6, Math.floor(canvas.width * config.min_scale * 1.15));
+            // Estimate number of flowers needed to fill the center densely
             const center_area = Math.PI * (center_fill_radius ** 2);
             const flower_area = (center_flower_size * 0.8) ** 2;
-            const num_center_flowers = Math.floor((center_area / flower_area) * 1.6);
+            const num_center_flowers = Math.floor((center_area / flower_area) * 1.6); // 1.6 factor for overlap/density
             
             for (let i = 0; i < num_center_flowers; i++) {
                  if (total_flowers >= config.max_flowers) break;
                  
+                 // Use a random radius based on square root to bias placement towards the center
                 const rand_angle = Math.random() * 2 * Math.PI;
                 const rand_radius = center_fill_radius * Math.sqrt(Math.random());
                 const x = cx + rand_radius * Math.cos(rand_angle);
                 const y = cy + rand_radius * Math.sin(rand_angle);
 
+                // Pick a random flower from the loaded set
                 const fname = flowerNames[Math.floor(Math.random() * flowerNames.length)];
                 const orig_img = loadedFlowers[fname];
                 const rot_deg = Math.random() * 360;
@@ -561,7 +647,7 @@
             }
 
             // --- Finalize ---
-            updateProgress(100, "Done! Total Flowers: " + total_flowers);
+            updateProgress(100, `Done! Total Flowers: ${total_flowers}`);
             setTimeout(() => {
                 progressOverlay.style.display = 'none';
                 generateBtn.disabled = false;
