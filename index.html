@@ -80,7 +80,7 @@
                 <p class="text-sm text-gray-600 mb-3">Upload your own .png flower images. Transparent backgrounds work best!</p>
                 <input type="file" id="flower-upload" multiple accept="image/png" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer"/>
                 <div id="flower-previews" class="mt-4 grid grid-cols-4 gap-2"></div>
-                <p class="text-xs text-center text-gray-500 mt-2">Default flowers loaded from **./flower** folder.</p>
+                <p class="text-xs text-center text-gray-500 mt-2">Pookalam requires images from the **./flowers** folder or uploaded files.</p>
             </div>
 
             <!-- Centerpiece Section -->
@@ -186,6 +186,15 @@
             </div>
         </div>
     </div>
+    
+    <!-- Custom Modal for Errors -->
+    <div id="custom-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-70">
+        <div class="bg-white p-6 rounded-xl shadow-2xl w-80">
+            <h3 id="modal-title" class="text-xl font-bold mb-3 text-red-600">Error</h3>
+            <p id="modal-message" class="text-gray-700 mb-6">Message.</p>
+            <button id="modal-close-btn" class="w-full bg-indigo-600 text-white font-semibold py-2 rounded-lg hover:bg-indigo-700">Close</button>
+        </div>
+    </div>
 
     <script>
         // DOM Elements
@@ -200,7 +209,12 @@
         const flowerUpload = document.getElementById('flower-upload');
         const centerUpload = document.getElementById('center-upload');
         const flowerPreviews = document.getElementById('flower-previews');
-        const centerPreview = document.getElementById('center-preview');
+        
+        // Custom Modal elements
+        const customModal = document.getElementById('custom-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
 
         // Config variables
         let config = {};
@@ -212,50 +226,48 @@
         const thumbCache = {};
         const rotCache = {};
         
-        // --- FALLBACK FLOWERS (if image files are missing) ---
-        function createFallbackFlowerShape(color) {
-            const size = 64;
-            const c = document.createElement('canvas');
-            c.width = size;
-            c.height = size;
-            const c_ctx = c.getContext('2d');
-            
-            c_ctx.fillStyle = color;
-            c_ctx.beginPath();
-            c_ctx.arc(size/2, size/2, size/2.2, 0, 2 * Math.PI);
-            c_ctx.fill();
-            
-            c_ctx.fillStyle = 'rgba(0,0,0,0.1)';
-            c_ctx.beginPath();
-            c_ctx.arc(size/2, size/2, size/4, 0, 2 * Math.PI);
-            c_ctx.fill();
-
-            const img = new Image();
-            img.src = c.toDataURL();
-            return img;
+        // --- MODAL FUNCTIONALITY ---
+        function showModal(title, message, type = 'Info') {
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            // Set color based on type
+            modalTitle.className = "text-xl font-bold mb-3 " + (type === 'Error' ? 'text-red-600' : 'text-indigo-600');
+            customModal.style.display = 'flex';
         }
 
+        modalCloseBtn.addEventListener('click', () => {
+            customModal.style.display = 'none';
+        });
+
+        // --- IMAGE INITIALIZATION ---
         async function initializeFlowers() {
-            // 1. List of local flower files to load
-            const localFlowerNames = [
-                "Lotus", "chrysanthemum", "daisy", "hibiscus", "ixora",
-                "jasmine", "marigold_orange", "marigold_yellow", "rose"
+            // List of local flower files to load, matching the ./flowers directory structure and casing
+            const localFlowerFiles = [
+                "chrysanthemum.PNG", "daisy.PNG", "hibiscus.PNG", "ixora.PNG",
+                "jasmine.PNG", "Lotus.PNG", "marigold_orange.PNG", "marigold_yellow.PNG", "rose.PNG"
             ];
             loadedFlowers = {};
             let promises = [];
+            let successCount = 0;
 
             // Attempt to load each local image
-            localFlowerNames.forEach(name => {
+            localFlowerFiles.forEach(fileName => {
+                const name = fileName.split('.')[0]; // Use name without extension as key
                 const img = new Image();
                 img.crossOrigin = "Anonymous";
                 const promise = new Promise((resolve) => {
-                    img.onload = () => resolve({ name, img });
+                    img.onload = () => {
+                        successCount++;
+                        resolve({ name, img });
+                    };
                     img.onerror = () => {
-                        console.error(`Failed to load flower from ./flower/${name}.PNG`);
+                        // Log detailed error to console for debugging if deployed failed
+                        console.error(`[Load Error] Failed to load image from path: ./flowers/${fileName}. Check file path, casing, and hosting environment.`);
                         resolve(null);
                     };
                 });
-                img.src = `./flower/${name}.PNG`; // Path is relative to the HTML file
+                // Correct path: './flowers/' + fileName
+                img.src = `./flowers/${fileName}`; 
                 promises.push(promise);
             });
 
@@ -264,15 +276,9 @@
                 loadedFlowers[result.name] = result.img;
             });
 
-            // 2. Fallback if no images were successfully loaded
-            if (Object.keys(loadedFlowers).length === 0) {
-                console.warn("No flower images loaded, using geometric shapes as fallback.");
-                loadedFlowers = {
-                    "marigold_orange_fallback": createFallbackFlowerShape("#FFC300"),
-                    "rose_fallback": createFallbackFlowerShape("#E91E63"),
-                    "daisy_fallback": createFallbackFlowerShape("#FFFFFF"),
-                };
-            }
+            console.log(`[Flower Load Status] Successfully loaded ${successCount} out of ${localFlowerFiles.length} images.`);
+
+            // NO FALLBACK LOGIC: If images fail to load, loadedFlowers remains empty.
             updateFlowerPreviews();
         }
 
@@ -284,10 +290,10 @@
             ctx.fillStyle = document.getElementById('bg-color').value;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Load local flowers (or fallbacks)
+            // Load local flowers
             await initializeFlowers();
             
-            // Initial generation
+            // Initial generation attempts to run with what was loaded
             updateConfig();
             composePookalam();
         };
@@ -298,7 +304,7 @@
             const files = Array.from(e.target.files);
             
             if(files.length === 0) {
-                 // If user clears selection, re-initialize with local/fallback flowers
+                 // If user clears selection, try to reload local images
                  initializeFlowers();
                  return;
             }
@@ -343,9 +349,8 @@
         
         generateBtn.addEventListener('click', () => {
              if (Object.keys(loadedFlowers).length === 0) {
-                 // In case initialization somehow failed
-                 console.error("No flowers loaded. Falling back to simple shapes.");
-                 initializeFlowers();
+                 console.error("Cannot generate Pookalam. No flower images are currently loaded.");
+                 showModal("No Flowers Loaded", "Please upload flower images or ensure the files in the './flowers' directory are loading correctly (check console for detailed errors).", "Error");
                  return;
              }
             updateConfig();
